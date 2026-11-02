@@ -12,11 +12,11 @@
 
 Создана база TrainingDB с таблицами Departments, Employees, Projects и Timesheets. В таблицы добавлены 5 отделов, 500 сотрудников, 3 проекта и 2000 записей табеля.
 
-![[Pasted image 20261026094842.png]]
+![Скриншот](Pasted%20image%2020261026094842.png)
 ## Настройки трассировки
 
 В SQL Server Profiler создана трассировка TrainingDB_Profiler_2019 по шаблону Blank. Использовались события RPC:Completed, SQL:BatchCompleted, ShowplanStatisticsProfile, ShowplanXMLStatisticsProfile и Lock:Acquired. Оставлены столбцы TextData, Duration, Reads и CPU. Установлены фильтры DatabaseName Like TrainingDB и Duration >= 100 мс.
-![[Pasted image 20261026100256.png]]
+![Скриншот](Pasted%20image%2020261026100256.png)
 
 ## Проблемные запросы до оптимизации
 
@@ -31,7 +31,7 @@
 | A | 45,643 | 42,67 | 5,33 | Сканирование индекса таблицы Employees |
 | B | 251,833 | 157,33 | 5,00 | Сканирование индекса и Hash Match |
 | C | 306,322 | 57,33 | 0,00 | Сканирование индекса и Sort |
-![[Pasted image 20261026100826.png]]
+![Скриншот](Pasted%20image%2020261026100826.png)
 
 ## Анализ планов выполнения
 
@@ -49,7 +49,7 @@ CREATE INDEX IX_Timesheets_WorkDate ON dbo.Timesheets(WorkDate);
 
 Индекс IX_Employees_Salary ускоряет фильтрацию по Salary в запросе A. Индекс IX_Timesheets_WorkDate ускоряет отбор строк по диапазону дат в запросе B.
 
-![[Pasted image 20261026102059.png]]
+![Скриншот](Pasted%20image%2020261026102059.png)
 ## Результаты после оптимизации
 
 ### SQL-код
@@ -66,7 +66,7 @@ CREATE INDEX IX_Timesheets_WorkDate ON dbo.Timesheets(WorkDate);
 | B | 251,833 | 231,229 | 157,33 | 35,67 | Число чтений существенно сократилось |
 | C | 306,322 | 307,187 | 57,33 | 45,00 | Число чтений сократилось; время почти не изменилось |
 
-![[Pasted image 20261026102815.png]]
+![Скриншот](Pasted%20image%2020261026102815.png)
 ## Вывод
 
 SQL Server Profiler позволяет найти длительные запросы по показателям Duration, Reads и CPU. Наиболее заметный эффект показал индекс IX_Timesheets_WorkDate для запроса B: среднее число логических чтений уменьшилось с 157,33 до 35,67, а среднее время снизилось с 251,833 до 231,229 мс. Для запросов A и C на небольшом наборе данных время почти не изменилось, что показывает необходимость проверять эффект оптимизации измерениями, а не предполагать его заранее.
